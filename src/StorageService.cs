@@ -58,13 +58,7 @@ public class StorageService
     // цінне - в сейф, великогабарит - на підлогу
     public string AssignCell(PickupOrder o)
     {
-        string prefix = "B-";
-        if (o.DeclaredValue >= SafeCellThreshold)
-            prefix = "SAFE-";
-        else if (o.Size == "L")
-            prefix = "F-";
-        else if (o.Size == "S")
-            prefix = "A-";
+        string prefix = PickupPrefix(o);
         int max = prefix == "SAFE-" ? SafeCellCount : RegularCellCount;
         for (int i = 1; i <= max; i++)
         {
@@ -75,6 +69,18 @@ public class StorageService
             return cell;
         }
         return null;   // місць нема
+    }
+
+    // R06: замість ланцюжка else-if — ранні повернення.
+    private static string PickupPrefix(PickupOrder o)
+    {
+        if (o.DeclaredValue >= SafeCellThreshold)
+            return "SAFE-";
+        if (o.Size == "L")
+            return "F-";
+        if (o.Size == "S")
+            return "A-";
+        return "B-";
     }
 
     public bool PlaceOnShelf(PickupOrder o)
