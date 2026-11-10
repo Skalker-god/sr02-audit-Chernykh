@@ -68,7 +68,7 @@ public class PickupDesk
         List<PickupOrder> mine = Store.FindByPhone(phone, isReturn);
         if (mine.Contains(o))
             return null;
-        o.FailedAttempts++;   // TODO: блокувати після 3 спроб
+        o.FailedAttempts++;   // TODO TD-03: блокувати після 3 спроб; строк — до 2027-01-31.
         return "WRONG_PHONE";
     }
 

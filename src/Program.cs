@@ -1,6 +1,7 @@
 namespace PickupPoint;
 
 // Демонстраційний сценарій зміни
+// TODO TD-05: демонстраційний Main не покритий тестами; строк — до 2027-03-31.
 public class Program
 {
     public static void Main(string[] args)

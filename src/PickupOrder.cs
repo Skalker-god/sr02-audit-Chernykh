@@ -23,7 +23,7 @@ public class PickupOrder
     public string Code;            // 6 digits, sent by SMS
     public string RecipientName;
     public string Phone;           // 0XXXXXXXXX
-    public string Size = "M";      // S, M, L
+    public string Size = "M";      // TODO TD-01: розмір і гроші — value objects; строк — до 2027-09-30.
     public OrderStatus Status = OrderStatus.Arrived;
     public DateTime ArrivedAt;
     public DateTime StorageUntil;

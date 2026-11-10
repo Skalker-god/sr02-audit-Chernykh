@@ -5,6 +5,7 @@ public class CashBox
 {
     private const decimal CommissionRate = 0.02m;
     private const decimal CommissionFixed = 20m;
+    // TODO TD-04: статичний баланс спільний для всіх стійок; строк — до 2027-06-30.
     public static decimal Balance = 0m;   // одна шухляда на весь пункт
     public decimal TakenToday;
     public decimal RefundedToday;

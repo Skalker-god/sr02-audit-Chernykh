@@ -1,8 +1,9 @@
 namespace PickupPoint;
 
-// In-memory store. TODO: move to the database (promised for v2.0)
+// TODO TD-08: прибрати in-memory сховище, перейти на БД; строк — до 2027-12-31.
 public class OrderStore
 {
+    // TODO TD-04: статичний лічильник — джерело крихких тестів; строк — до 2027-06-30.
     public static int nextNo = 1;
     private readonly List<PickupOrder> _orders = new List<PickupOrder>();
 

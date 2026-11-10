@@ -15,6 +15,7 @@ public static class DeskJournal
             string stamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
             File.AppendAllText(path, stamp + " " + text + "\n");
         }
+        // TODO TD-06: журнал ковтає помилку запису; строк — до 2027-03-31.
         catch { }
     }
 }

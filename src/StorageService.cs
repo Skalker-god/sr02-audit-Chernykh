@@ -18,6 +18,7 @@ public class StorageService
         Store = store;
     }
 
+    // TODO TD-02: повертати доменний виняток замість null; строк — до 2027-02-28.
     public PickupOrder RegisterArrival(string name, string phone, string size,
         decimal declaredValue, decimal cod, bool allowPartial, List<OrderItem> items)
     {
@@ -40,7 +41,7 @@ public class StorageService
         if (size != null)
             o.Size = size.Trim().ToUpper();
         o.DeclaredValue = declaredValue;
-        o.CodAmount = cod;   // TODO: а якщо мінус?
+        o.CodAmount = cod;   // TODO TD-07: валідація від'ємного COD; строк — до 2027-02-28.
         o.AllowPartial = allowPartial;
         o.Items = items;
         o.ArrivedAt = DateTime.Now;
