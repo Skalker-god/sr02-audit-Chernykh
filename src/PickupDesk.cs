@@ -56,6 +56,7 @@ public class PickupDesk
     public string ReturnOrder(string code, string phone)
         => Process(code, phone, true, false, false);
 
+    // R01: диспетчер лише обирає сценарій, деталі — в окремих методах.
     private string Process(string code, string phone,
         bool isReturn, bool skipCheck, bool partial)
     {
@@ -66,75 +67,129 @@ public class PickupDesk
             return "NOT_FOUND";
         if (!skipCheck)
         {
-            List<PickupOrder> mine = Store.FindByPhone(phone, isReturn);
-            if (!mine.Contains(o))
-            {
-                o.FailedAttempts++;   // TODO: блокувати після 3 спроб
-                return "WRONG_PHONE";
-            }
+            string wrongPhone = CheckPhone(o, phone, isReturn);
+            if (wrongPhone != null)
+                return wrongPhone;
         }
-        if (isReturn)
-        {
-            if (o.Status == OrderStatus.Stored)
-            {
-                // відмова до видачі: річ ще на полиці
-                o.Status = OrderStatus.Returned;
-                o.History.Add("Refused");
-                return "REFUSED";
-            }
-            if (o.Status != OrderStatus.HandedOut)
-                return "ERR_STATUS " + o.Status;
-            int d2 = (moment.Date - o.HandedOutAt.Date).Days;
-            if (d2 > ReturnPeriodDays)
-                return "RETURN_PERIOD_OVER";
-            decimal back = o.PaidAmount - o.PaidFee;
-            Cash.Refund(back, o.Number);
-            o.Status = OrderStatus.Returned;
-            o.History.Add("Returned");
-            LastAmount = back;
-            return "RETURNED";
-        }
-        if (o.Status != OrderStatus.Stored)
-        {
-            // повторна видача або видача з поверненого стану
-            Log("  ! " + o.Number + " is " + o.Status + ", cannot hand out");
+        return isReturn
+            ? ProcessReturn(o, moment)
+            : ProcessHandout(o, moment, skipCheck, partial);
+    }
+
+    private string CheckPhone(PickupOrder o, string phone, bool isReturn)
+    {
+        List<PickupOrder> mine = Store.FindByPhone(phone, isReturn);
+        if (mine.Contains(o))
+            return null;
+        o.FailedAttempts++;   // TODO: блокувати після 3 спроб
+        return "WRONG_PHONE";
+    }
+
+    private string ProcessReturn(PickupOrder o, DateTime moment)
+    {
+        if (o.Status == OrderStatus.Stored)
+            return RefuseBeforeHandout(o);
+        if (o.Status != OrderStatus.HandedOut)
             return "ERR_STATUS " + o.Status;
-        }
+        return RefundReturned(o, moment);
+    }
+
+    private string RefuseBeforeHandout(PickupOrder o)
+    {
+        // відмова до видачі: річ ще на полиці
+        o.Status = OrderStatus.Returned;
+        o.History.Add("Refused");
+        return "REFUSED";
+    }
+
+    private string RefundReturned(PickupOrder o, DateTime moment)
+    {
+        int d2 = (moment.Date - o.HandedOutAt.Date).Days;
+        if (d2 > ReturnPeriodDays)
+            return "RETURN_PERIOD_OVER";
+        decimal back = o.PaidAmount - o.PaidFee;
+        Cash.Refund(back, o.Number);
+        o.Status = OrderStatus.Returned;
+        o.History.Add("Returned");
+        LastAmount = back;
+        return "RETURNED";
+    }
+
+    private string ProcessHandout(PickupOrder o, DateTime moment,
+        bool skipCheck, bool partial)
+    {
+        if (o.Status != OrderStatus.Stored)
+            return RejectNotStored(o);
         if (!skipCheck)
         {
-            if (moment.Date > o.StorageUntil)
-            {
-                o.Status = OrderStatus.Expired;
-                o.History.Add("Expired");
-                Log("  ! storage term of " + o.Number + " is over");
-                return "EXPIRED";
-            }
+            string expired = CheckStorage(o, moment);
+            if (expired != null)
+                return expired;
         }
-        if (o.DeclaredValue >= IdRequiredFrom && PresentedId == null)
+        if (NeedsId(o))
             return "ID_REQUIRED";
+        decimal fee = StorageFee(o, moment);
+        decimal goods = o.CodAmount;
+        if (partial)
+        {
+            string denied = ApplyPartial(o, ref goods);
+            if (denied != null)
+                return denied;
+        }
+        return CompleteHandout(o, moment, goods, fee);
+    }
+
+    private string RejectNotStored(PickupOrder o)
+    {
+        // повторна видача або видача з поверненого стану
+        Log("  ! " + o.Number + " is " + o.Status + ", cannot hand out");
+        return "ERR_STATUS " + o.Status;
+    }
+
+    private string CheckStorage(PickupOrder o, DateTime moment)
+    {
+        if (moment.Date <= o.StorageUntil)
+            return null;
+        o.Status = OrderStatus.Expired;
+        o.History.Add("Expired");
+        Log("  ! storage term of " + o.Number + " is over");
+        return "EXPIRED";
+    }
+
+    private bool NeedsId(PickupOrder o)
+        => o.DeclaredValue >= IdRequiredFrom && PresentedId == null;
+
+    private decimal StorageFee(PickupOrder o, DateTime moment)
+    {
         int days = (moment.Date - o.ArrivedAt.Date).Days;
         decimal rate = StandardSizeRate;
         if (o.Size == "L")
             rate = LargeSizeRate;
-        decimal fee = 0m;
-        if (days > FreeStorageDays)
-            fee = (days - FreeStorageDays) * rate;
-        decimal goods = o.CodAmount;
-        if (partial)
+        if (days <= FreeStorageDays)
+            return 0m;
+        return (days - FreeStorageDays) * rate;
+    }
+
+    private string ApplyPartial(PickupOrder o, ref decimal goods)
+    {
+        if (!o.AllowPartial)
+            return "PARTIAL_NOT_ALLOWED";
+        int refused = 0;
+        foreach (OrderItem it in o.Items)
         {
-            if (!o.AllowPartial)
-                return "PARTIAL_NOT_ALLOWED";
-            int refused = 0;
-            foreach (OrderItem it in o.Items)
+            if (it.Refused)
             {
-                if (it.Refused)
-                {
-                    refused++;
-                    goods -= it.Price;
-                }
+                refused++;
+                goods -= it.Price;
             }
-            o.History.Add("Partial " + (o.Items.Count - refused) + "/" + o.Items.Count);
         }
+        o.History.Add("Partial " + (o.Items.Count - refused) + "/" + o.Items.Count);
+        return null;
+    }
+
+    private string CompleteHandout(PickupOrder o, DateTime moment,
+        decimal goods, decimal fee)
+    {
         decimal total = goods + Cash.Commission(o, goods) + fee;
         // після 20:00 картка для великих сум
         if (total > CardOnlyFrom && moment.Hour >= CardOnlyHour)
