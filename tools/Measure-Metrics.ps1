@@ -50,7 +50,7 @@ function Get-LogicalCount([string[]]$bodyLines) {
 }
 
 function Get-Cc([string]$body) {
-    $b = $body -replace '//.*$', ''
+    $b = (($body -split "`r?`n") | ForEach-Object { $_ -replace '//.*$', '' }) -join "`n"
     $cc = 1
     $cc += ([regex]::Matches($b, '\b(if|for|foreach|while|case|catch)\b')).Count
     $cc += ([regex]::Matches($b, '&&')).Count

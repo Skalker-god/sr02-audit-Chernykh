@@ -67,7 +67,7 @@
 | 22 | `ShiftReport.PrintShelf` | `void PrintShelf()` | public | 12 | 5 | ні |
 | 23 | `ShiftReport.CloseShift` | `void CloseShift()` | public | 13 | 7 | ні |
 | 24 | `StorageService.StorageService` | `StorageService(OrderStore)` | public | 1 | 1 | ні |
-| 25 | `StorageService.RegisterArrival` | `PickupOrder RegisterArrival(...)` | public | 28 | 11 | ні |
+| 25 | `StorageService.RegisterArrival` | `PickupOrder RegisterArrival(...)` | public | 28 | 10 | ні |
 | 26 | `StorageService.AssignCell` | `string AssignCell(PickupOrder)` | public | 15 | 7 | ні |
 | 27 | `StorageService.PlaceOnShelf` | `bool PlaceOnShelf(PickupOrder)` | public | 7 | 3 | ні |
 | 28 | `StorageService.ChangeStatus` | `bool ChangeStatus(string, OrderStatus)` | public | 24 | 9 | ні |
@@ -82,13 +82,15 @@
 |---|---:|
 | Методів | 29 |
 | Максимальна CC | 21 (`PickupDesk.Handout`) |
-| Середня CC | 3,97 |
+| Середня CC | 3,93 |
 | Найдовший метод, логічних рядків | 68 (`PickupDesk.Handout`) |
 | Максимальна вкладеність | 4 (`PickupDesk.Handout`) |
 | Максимум параметрів | 8 (`Program.Arrive`) |
 | Максимальний Fan-out | 7 (`PickupDesk`, `Program`) |
 | Клонів ≥6 рядків | 2 групи, 5 фрагментів |
 
-Примітка: `StorageService.RegisterArrival` має CC = 11, а не 10, як у
-попередній спробі, бо методика враховує `catch` у `try/catch` навколо
-`size.Trim()`. Саме цей `catch` є окремим дефектом D-10.
+Примітка: `StorageService.RegisterArrival` має CC = 10. Оцінка враховує всі
+справжні розгалуження (`if` — 4, `||` — 3, `&&` — 1, `catch` — 1) і не рахує
+знак питання з коментаря `// TODO: а якщо мінус?`: коментарі відкидаються
+порядково до підрахунку. Саме `catch` навколо `size.Trim()` є окремим
+дефектом D-10; після R18 він зник.
