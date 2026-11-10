@@ -90,6 +90,18 @@ public class StorageService
     }
 
     // Arrived -> Stored -> HandedOut / Returned / Expired
+    private static readonly Dictionary<OrderStatus, OrderStatus[]> AllowedTransitions = new()
+    {
+        [OrderStatus.Arrived] = new[] { OrderStatus.Stored },
+        [OrderStatus.Stored] = new[]
+        {
+            OrderStatus.HandedOut, OrderStatus.Returned, OrderStatus.Expired,
+        },
+        // 14 днів перевіряє стійка; назад продавцю
+        [OrderStatus.HandedOut] = new[] { OrderStatus.Returned },
+        [OrderStatus.Expired] = new[] { OrderStatus.Returned },
+    };
+
     public bool ChangeStatus(string number, OrderStatus to)
     {
         PickupOrder o = Store.FindByNumber(number);
@@ -98,21 +110,9 @@ public class StorageService
             Console.WriteLine("  ! order " + number + " not found");
             return false;
         }
-        bool ok = false;
-        switch (o.Status)
-        {
-            case OrderStatus.Arrived:
-                ok = to == OrderStatus.Stored;
-                break;
-            case OrderStatus.Stored:
-                ok = to == OrderStatus.HandedOut || to == OrderStatus.Returned
-                    || to == OrderStatus.Expired;
-                break;
-            case OrderStatus.HandedOut:   // 14 днів перевіряє стійка
-            case OrderStatus.Expired:     // назад продавцю
-                ok = to == OrderStatus.Returned;
-                break;
-        }
+        // R08: допустимі переходи — дані, а не switch.
+        bool ok = AllowedTransitions.TryGetValue(o.Status, out OrderStatus[] allowed)
+            && allowed.Contains(to);
         if (!ok)
         {
             Console.WriteLine("  ! cannot move " + o.Number + ": " + o.Status + " -> " + to);
