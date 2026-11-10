@@ -62,5 +62,7 @@ if (days > 5)
 | Нормалізація телефону | 2 фрагменти, 7 рядків | 0 | `PhoneNormalizer.Normalize` (R01/R09) |
 | Формула пені | 3 фрагменти, 7 рядків | 0 | `StorageFeeCalculator.Calculate` (R09) |
 
-Перевірка після: повторний пошук клонів ≥6 рядків у `src/` не знаходить жодної
-групи. Див. `docs/metrics-after.csv` і розділ 6 звіту.
+Перевірка після: `tools/Find-Clones.ps1` (вікно 6 рядків) на `src/` дає
+`clones=0`. Для порівняння, той самий скрипт на baseline знаходить 4 вікна —
+дві групи з таблиці вище. Див. `docs/metrics-after.csv`, `docs/metrics-after.md`
+і розділ 6 звіту.

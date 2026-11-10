@@ -1,0 +1,2 @@
+﻿be25ffa refactor(StorageService): R02 ╨┐╨╡╤А╨╡╨╣╨╝╨╡╨╜╨╛╨▓╨░╨╜╨╛ do_sweep ╤Ц Program.Try
+362cc2c refactor(PickupDesk): R19 ╨┐╤А╨╕╨▒╤А╨░╨╜╨╛ ╨▒╤Г╨╗╨╡╨▓╤Ц ╨┐╤А╨░╨┐╨╛╤А╤Ж╤Ц
