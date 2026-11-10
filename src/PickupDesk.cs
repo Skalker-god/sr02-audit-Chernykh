@@ -28,15 +28,7 @@ public class PickupDesk
     public bool RefuseItem(string code, string sku)
     {
         PickupOrder o = Store.FindByCode(code);
-        if (o == null)
-            return false;
-        foreach (OrderItem it in o.Items)
-            if (it.Sku == sku)
-            {
-                it.Refused = true;
-                return true;
-            }
-        return false;
+        return o != null && o.Refuse(sku);
     }
 
     // R19: сценарії мають імена, а не набір булевих прапорців.

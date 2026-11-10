@@ -40,6 +40,18 @@ public class PickupOrder
 
     public bool IsCod() => CodAmount > 0;
 
+    // R10: правило відмови належить замовленню, а не стійці.
+    public bool Refuse(string sku)
+    {
+        foreach (OrderItem it in Items)
+            if (it.Sku == sku)
+            {
+                it.Refused = true;
+                return true;
+            }
+        return false;
+    }
+
     public string Line()
     {
         string cell = Cell == null ? "-" : Cell;
