@@ -41,35 +41,34 @@ public class PickupDesk
 
     // R19: сценарії мають імена, а не набір булевих прапорців.
     public string Handout(string code, string phone)
-        => Process(code, phone, false, false, false);
+        => Process(new HandoutRequest { Code = code, Phone = phone });
 
     public string HandoutByProxy(string code)
-        => Process(code, null, false, true, false);
+        => Process(new HandoutRequest { Code = code, SkipCheck = true });
 
     public string HandoutPartially(string code, string phone)
-        => Process(code, phone, false, false, true);
+        => Process(new HandoutRequest { Code = code, Phone = phone, Partial = true });
 
     public string ReturnOrder(string code, string phone)
-        => Process(code, phone, true, false, false);
+        => Process(new HandoutRequest { Code = code, Phone = phone, IsReturn = true });
 
     // R01: диспетчер лише обирає сценарій, деталі — в окремих методах.
-    private string Process(string code, string phone,
-        bool isReturn, bool skipCheck, bool partial)
+    private string Process(HandoutRequest req)
     {
         LastAmount = 0m;
         DateTime moment = Clock();
-        PickupOrder o = Store.FindByCode(code);
+        PickupOrder o = Store.FindByCode(req.Code);
         if (o == null)
             return "NOT_FOUND";
-        if (!skipCheck)
+        if (!req.SkipCheck)
         {
-            string wrongPhone = CheckPhone(o, phone, isReturn);
+            string wrongPhone = CheckPhone(o, req.Phone, req.IsReturn);
             if (wrongPhone != null)
                 return wrongPhone;
         }
-        return isReturn
+        return req.IsReturn
             ? ProcessReturn(o, moment)
-            : ProcessHandout(o, moment, skipCheck, partial);
+            : ProcessHandout(o, moment, req);
     }
 
     private string CheckPhone(PickupOrder o, string phone, bool isReturn)
@@ -112,11 +111,11 @@ public class PickupDesk
     }
 
     private string ProcessHandout(PickupOrder o, DateTime moment,
-        bool skipCheck, bool partial)
+        HandoutRequest req)
     {
         if (o.Status != OrderStatus.Stored)
             return RejectNotStored(o);
-        if (!skipCheck)
+        if (!req.SkipCheck)
         {
             string expired = CheckStorage(o, moment);
             if (expired != null)
@@ -126,7 +125,7 @@ public class PickupDesk
             return "ID_REQUIRED";
         decimal fee = _fees.Calculate(o, moment);
         decimal goods = o.CodAmount;
-        if (partial)
+        if (req.Partial)
         {
             string denied = ApplyPartial(o, ref goods);
             if (denied != null)
