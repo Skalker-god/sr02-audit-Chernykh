@@ -7,13 +7,11 @@ public class PickupDesk
     private const decimal IdRequiredFrom = 5000m;
     private const decimal CardOnlyFrom = 10000m;
     private const int CardOnlyHour = 20;
-    private const int FreeStorageDays = 5;
-    private const decimal StandardSizeRate = 15m;
-    private const decimal LargeSizeRate = 25m;
     public static int HandoutsToday = 0;
     public OrderStore Store;
     public StorageService Storage;
     public CashBox Cash = new CashBox();
+    private readonly StorageFeeCalculator _fees = new StorageFeeCalculator();
     public decimal LastAmount;
     public Func<DateTime> Clock = () => DateTime.Now;   // шов часу для тестів
     public Action<string> Log = Console.WriteLine;      // шов журналу для тестів
@@ -126,7 +124,7 @@ public class PickupDesk
         }
         if (NeedsId(o))
             return "ID_REQUIRED";
-        decimal fee = StorageFee(o, moment);
+        decimal fee = _fees.Calculate(o, moment);
         decimal goods = o.CodAmount;
         if (partial)
         {
@@ -156,17 +154,6 @@ public class PickupDesk
 
     private bool NeedsId(PickupOrder o)
         => o.DeclaredValue >= IdRequiredFrom && PresentedId == null;
-
-    private decimal StorageFee(PickupOrder o, DateTime moment)
-    {
-        int days = (moment.Date - o.ArrivedAt.Date).Days;
-        decimal rate = StandardSizeRate;
-        if (o.Size == "L")
-            rate = LargeSizeRate;
-        if (days <= FreeStorageDays)
-            return 0m;
-        return (days - FreeStorageDays) * rate;
-    }
 
     private string ApplyPartial(PickupOrder o, ref decimal goods)
     {

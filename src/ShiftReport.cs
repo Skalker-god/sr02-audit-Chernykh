@@ -5,6 +5,7 @@ public class ShiftReport
 {
     public OrderStore Store;
     public CashBox Cash;
+    private readonly StorageFeeCalculator _fees = new StorageFeeCalculator();
 
     // що лежить і скільки доплатить клієнт
     public void PrintShelf()
@@ -14,13 +15,7 @@ public class ShiftReport
         {
             if (o.Status != OrderStatus.Stored)
                 continue;
-            int days = (DateTime.Today - o.ArrivedAt.Date).Days;
-            decimal rate = 15m;
-            if (o.Size == "L")
-                rate = 25m;
-            decimal fee = 0m;
-            if (days > 5)
-                fee = (days - 5) * rate;
+            decimal fee = _fees.Calculate(o, DateTime.Today);
             Console.WriteLine("  " + o.Line() + " | fee " + fee.ToString("0.00"));
         }
     }

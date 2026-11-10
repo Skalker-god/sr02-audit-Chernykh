@@ -11,6 +11,7 @@ public class StorageService
     public const int StorageDays = 7;   // 7 днів на полиці, з них 5 безкоштовні
     public decimal SenderFees;    // платить магазин
     public List<string> BusyCells = new List<string>();
+    private readonly StorageFeeCalculator _fees = new StorageFeeCalculator();
 
     public StorageService(OrderStore store)
     {
@@ -138,14 +139,7 @@ public class StorageService
             if (o.Status != OrderStatus.Stored || DateTime.Today <= o.StorageUntil)
                 continue;
             o.Status = OrderStatus.Expired;
-            int days = (DateTime.Today - o.ArrivedAt.Date).Days;
-            decimal rate = 15m;
-            if (o.Size == "L")
-                rate = 25m;
-            decimal fee = 0m;
-            if (days > 5)
-                fee = (days - 5) * rate;
-            SenderFees += fee;
+            SenderFees += _fees.Calculate(o, DateTime.Today);
             o.History.Add("Expired");
             BusyCells.Remove(o.Cell);
             cnt++;
