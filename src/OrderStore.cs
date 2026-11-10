@@ -43,13 +43,7 @@ public class OrderStore
         List<PickupOrder> res = new List<PickupOrder>();
         if (string.IsNullOrEmpty(phone))
             return res;
-        string p = phone.Trim();
-        p = p.Replace(" ", "").Replace("-", "");
-        p = p.Replace("(", "").Replace(")", "");
-        if (p.StartsWith("+38"))
-            p = p.Substring(3);
-        if (p.Length == 12 && p.StartsWith("38"))
-            p = p.Substring(2);
+        string p = PhoneNormalizer.Normalize(phone);
         foreach (PickupOrder o in Orders)
         {
             if (o.Phone != p)

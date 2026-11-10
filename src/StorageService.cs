@@ -27,13 +27,7 @@ public class StorageService
             Console.WriteLine("  ! arrival rejected: empty field");
             return null;
         }
-        string p = phone.Trim();
-        p = p.Replace(" ", "").Replace("-", "");
-        p = p.Replace("(", "").Replace(")", "");
-        if (p.StartsWith("+38"))
-            p = p.Substring(3);
-        if (p.Length == 12 && p.StartsWith("38"))
-            p = p.Substring(2);
+        string p = PhoneNormalizer.Normalize(phone);
         if (p.Length != 10)
         {
             Console.WriteLine("  ! arrival rejected: invalid phone " + phone);
