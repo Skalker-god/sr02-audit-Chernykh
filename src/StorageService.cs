@@ -8,7 +8,7 @@ public class StorageService
     public const int RegularCellCount = 40;
     public static bool NotifyBySms = false;   // шлюз вимкнули
     public OrderStore Store;
-    public const int StorageDays = 7;   // зберігаємо 5 днів
+    public const int StorageDays = 7;   // 7 днів на полиці, з них 5 безкоштовні
     public decimal SenderFees;    // платить магазин
     public List<string> BusyCells = new List<string>();
 
