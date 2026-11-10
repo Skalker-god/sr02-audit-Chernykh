@@ -55,7 +55,7 @@ public class PickupDeskCharacterizationTests
         PickupDesk desk = NewDesk(Now);
         PickupOrder order = AddOrder(desk, 2, cod: 1000m, items: OneItem(1000m));
 
-        string result = desk.Handout(order.Code, order.Phone, false, false, false);
+        string result = desk.Handout(order.Code, order.Phone);
 
         Assert.Equal("OK", result);
         Assert.Equal(OrderStatus.HandedOut, order.Status);
@@ -72,7 +72,7 @@ public class PickupDeskCharacterizationTests
         PickupDesk desk = NewDesk(Now);
         PickupOrder order = AddOrder(desk, 5, cod: 100m, items: OneItem(100m));
 
-        string result = desk.Handout(order.Code, order.Phone, false, false, false);
+        string result = desk.Handout(order.Code, order.Phone);
 
         Assert.Equal("OK", result);
         Assert.Equal(122m, desk.LastAmount);
@@ -84,7 +84,7 @@ public class PickupDeskCharacterizationTests
         PickupDesk desk = NewDesk(Now);
         PickupOrder order = AddOrder(desk, 6, cod: 0m, items: OneItem());
 
-        string result = desk.Handout(order.Code, order.Phone, false, false, false);
+        string result = desk.Handout(order.Code, order.Phone);
 
         Assert.Equal("OK", result);
         Assert.Equal(15m, desk.LastAmount);
@@ -96,7 +96,7 @@ public class PickupDeskCharacterizationTests
         PickupDesk desk = NewDesk(Now);
         PickupOrder order = AddOrder(desk, 7, size: "L", cod: 0m, items: OneItem());
 
-        string result = desk.Handout(order.Code, order.Phone, false, false, false);
+        string result = desk.Handout(order.Code, order.Phone);
 
         Assert.Equal("OK", result);
         Assert.Equal(50m, desk.LastAmount);
@@ -116,7 +116,7 @@ public class PickupDeskCharacterizationTests
             });
         desk.RefuseItem(order.Code, "SKU-2");
 
-        string result = desk.Handout(order.Code, order.Phone, false, false, true);
+        string result = desk.HandoutPartially(order.Code, order.Phone);
 
         Assert.Equal("OK", result);
         Assert.Equal(428m, desk.LastAmount);
@@ -129,7 +129,7 @@ public class PickupDeskCharacterizationTests
         PickupDesk desk = NewDesk(Now);
         PickupOrder order = AddOrder(desk, 0, allowPartial: false, items: OneItem());
 
-        string result = desk.Handout(order.Code, order.Phone, false, false, true);
+        string result = desk.HandoutPartially(order.Code, order.Phone);
 
         Assert.Equal("PARTIAL_NOT_ALLOWED", result);
         Assert.Equal(OrderStatus.Stored, order.Status);
@@ -143,7 +143,7 @@ public class PickupDeskCharacterizationTests
         PickupOrder order = AddOrder(desk, 0, cod: 100m, allowPartial: true, items: OneItem(100m));
         order.Items.Clear();
 
-        string result = desk.Handout(order.Code, order.Phone, false, false, true);
+        string result = desk.HandoutPartially(order.Code, order.Phone);
 
         Assert.Equal("OK", result);
         Assert.Equal(122m, desk.LastAmount);
@@ -156,7 +156,7 @@ public class PickupDeskCharacterizationTests
         PickupDesk desk = NewDesk(Now);
         PickupOrder order = AddOrder(desk, 0, declared: 4999m, items: OneItem());
 
-        string result = desk.Handout(order.Code, order.Phone, false, false, false);
+        string result = desk.Handout(order.Code, order.Phone);
 
         Assert.Equal("OK", result);
     }
@@ -167,7 +167,7 @@ public class PickupDeskCharacterizationTests
         PickupDesk desk = NewDesk(Now);
         PickupOrder order = AddOrder(desk, 0, declared: 5000m, items: OneItem());
 
-        string result = desk.Handout(order.Code, order.Phone, false, false, false);
+        string result = desk.Handout(order.Code, order.Phone);
 
         Assert.Equal("ID_REQUIRED", result);
         Assert.Equal(OrderStatus.Stored, order.Status);
@@ -181,7 +181,7 @@ public class PickupDeskCharacterizationTests
         PickupDesk desk = NewDesk(Now);
         PickupOrder order = AddOrder(desk, 8, items: OneItem());
 
-        string result = desk.Handout(order.Code, order.Phone, false, false, false);
+        string result = desk.Handout(order.Code, order.Phone);
 
         Assert.Equal("EXPIRED", result);
         Assert.Equal(OrderStatus.Expired, order.Status);
@@ -194,7 +194,7 @@ public class PickupDeskCharacterizationTests
         PickupDesk desk = NewDesk(Now);
         PickupOrder order = AddOrder(desk, 0, items: OneItem());
 
-        string result = desk.Handout(order.Code, "0670000000", false, false, false);
+        string result = desk.Handout(order.Code, "0670000000");
 
         Assert.Equal("WRONG_PHONE", result);
         Assert.Equal(1, order.FailedAttempts);
@@ -206,7 +206,7 @@ public class PickupDeskCharacterizationTests
     {
         PickupDesk desk = NewDesk(Now);
 
-        string result = desk.Handout("999999", "0671234567", false, false, false);
+        string result = desk.Handout("999999", "0671234567");
 
         Assert.Equal("NOT_FOUND", result);
     }
@@ -216,7 +216,7 @@ public class PickupDeskCharacterizationTests
     {
         PickupDesk desk = NewDesk(Now);
 
-        string result = desk.Handout(null, "0671234567", false, false, false);
+        string result = desk.Handout(null, "0671234567");
 
         Assert.Equal("NOT_FOUND", result);
     }
@@ -229,7 +229,7 @@ public class PickupDeskCharacterizationTests
         PickupDesk desk = NewDesk(Now);
         PickupOrder order = AddOrder(desk, 0, items: OneItem());
 
-        string result = desk.Handout(order.Code, order.Phone, true, false, false);
+        string result = desk.ReturnOrder(order.Code, order.Phone);
 
         Assert.Equal("REFUSED", result);
         Assert.Equal(OrderStatus.Returned, order.Status);
@@ -241,10 +241,10 @@ public class PickupDeskCharacterizationTests
     {
         PickupDesk desk = NewDesk(Now);
         PickupOrder order = AddOrder(desk, 0, cod: 1000m, items: OneItem(1000m));
-        desk.Handout(order.Code, order.Phone, false, false, false);
+        desk.Handout(order.Code, order.Phone);
         order.HandedOutAt = Now.AddDays(-14);
 
-        string result = desk.Handout(order.Code, order.Phone, true, false, false);
+        string result = desk.ReturnOrder(order.Code, order.Phone);
 
         Assert.Equal("RETURNED", result);
         Assert.Equal(OrderStatus.Returned, order.Status);
@@ -257,10 +257,10 @@ public class PickupDeskCharacterizationTests
     {
         PickupDesk desk = NewDesk(Now);
         PickupOrder order = AddOrder(desk, 0, cod: 1000m, items: OneItem(1000m));
-        desk.Handout(order.Code, order.Phone, false, false, false);
+        desk.Handout(order.Code, order.Phone);
         order.HandedOutAt = Now.AddDays(-15);
 
-        string result = desk.Handout(order.Code, order.Phone, true, false, false);
+        string result = desk.ReturnOrder(order.Code, order.Phone);
 
         Assert.Equal("RETURN_PERIOD_OVER", result);
         Assert.Equal(OrderStatus.HandedOut, order.Status);
@@ -273,7 +273,7 @@ public class PickupDeskCharacterizationTests
         PickupOrder order = AddOrder(desk, 0, items: OneItem());
         order.Status = OrderStatus.Arrived;
 
-        string result = desk.Handout(order.Code, order.Phone, true, false, false);
+        string result = desk.ReturnOrder(order.Code, order.Phone);
 
         Assert.Equal("ERR_STATUS Arrived", result);
     }
@@ -285,7 +285,7 @@ public class PickupDeskCharacterizationTests
         PickupOrder order = AddOrder(desk, 0, items: OneItem());
         order.Status = OrderStatus.Returned;
 
-        string result = desk.Handout(order.Code, null, false, true, false);
+        string result = desk.HandoutByProxy(order.Code);
 
         Assert.Equal("ERR_STATUS Returned", result);
     }
@@ -296,7 +296,7 @@ public class PickupDeskCharacterizationTests
         PickupDesk desk = NewDesk(Now);
         PickupOrder order = AddOrder(desk, 0, cod: 100m, items: OneItem(100m));
 
-        string result = desk.Handout(order.Code, null, false, true, false);
+        string result = desk.HandoutByProxy(order.Code);
 
         Assert.Equal("OK", result);
         Assert.Equal(OrderStatus.HandedOut, order.Status);
@@ -310,7 +310,7 @@ public class PickupDeskCharacterizationTests
         PickupDesk desk = NewDesk(new DateTime(2026, 11, 9, 20, 30, 0));
         PickupOrder order = AddOrder(desk, 0, cod: 10000m, items: OneItem(10000m));
 
-        string result = desk.Handout(order.Code, order.Phone, false, false, false);
+        string result = desk.Handout(order.Code, order.Phone);
 
         Assert.Equal("CARD_ONLY", result);
         Assert.Equal(OrderStatus.Stored, order.Status);
@@ -323,7 +323,7 @@ public class PickupDeskCharacterizationTests
         PickupDesk desk = NewDesk(new DateTime(2026, 11, 9, 19, 30, 0));
         PickupOrder order = AddOrder(desk, 0, cod: 10000m, items: OneItem(10000m));
 
-        string result = desk.Handout(order.Code, order.Phone, false, false, false);
+        string result = desk.Handout(order.Code, order.Phone);
 
         Assert.Equal("OK", result);
         Assert.Equal(10220m, desk.LastAmount);
@@ -335,7 +335,7 @@ public class PickupDeskCharacterizationTests
         PickupDesk desk = NewDesk(new DateTime(2026, 11, 9, 20, 0, 0));
         PickupOrder order = AddOrder(desk, 0, cod: 9784.31m, items: OneItem(9784.31m));
 
-        string result = desk.Handout(order.Code, order.Phone, false, false, false);
+        string result = desk.Handout(order.Code, order.Phone);
 
         Assert.Equal("OK", result);
         Assert.Equal(10000.00m, desk.LastAmount);
@@ -347,7 +347,7 @@ public class PickupDeskCharacterizationTests
         PickupDesk desk = NewDesk(new DateTime(2026, 11, 9, 20, 0, 0));
         PickupOrder order = AddOrder(desk, 0, cod: 9784.32m, items: OneItem(9784.32m));
 
-        string result = desk.Handout(order.Code, order.Phone, false, false, false);
+        string result = desk.Handout(order.Code, order.Phone);
 
         Assert.Equal("CARD_ONLY", result);
     }
@@ -361,7 +361,7 @@ public class PickupDeskCharacterizationTests
         PickupDesk desk = NewDesk(Now);
         PickupOrder order = AddOrder(desk, 0, cod: 100m, items: OneItem(100m));
 
-        string result = desk.Handout(order.Code, phone, false, false, false);
+        string result = desk.Handout(order.Code, phone);
 
         Assert.Equal("OK", result);
         Assert.Equal(OrderStatus.HandedOut, order.Status);
@@ -375,7 +375,7 @@ public class PickupDeskCharacterizationTests
         PickupDesk desk = NewDesk(Now);
         PickupOrder order = AddOrder(desk, 0, cod: -100m, items: OneItem(100m));
 
-        string result = desk.Handout(order.Code, order.Phone, false, false, false);
+        string result = desk.Handout(order.Code, order.Phone);
 
         Assert.Equal("OK", result);
         Assert.Equal(-100m, desk.LastAmount);
@@ -492,7 +492,7 @@ public class PickupDeskCharacterizationTests
     {
         PickupDesk desk = NewDesk(Now);
         PickupOrder order = AddOrder(desk, 0, cod: 100m, items: OneItem(100m));
-        desk.Handout(order.Code, order.Phone, false, false, false);
+        desk.Handout(order.Code, order.Phone);
 
         Assert.Empty(desk.Store.FindByPhone(order.Phone, false));
         Assert.Single(desk.Store.FindByPhone(order.Phone, true));

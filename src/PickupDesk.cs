@@ -9,8 +9,8 @@ public class PickupDesk
     public CashBox Cash = new CashBox();
     public decimal LastAmount;
     public Func<DateTime> Clock = () => DateTime.Now;   // шов часу для тестів
-    public Action<string> Log = Console.WriteLine;   // шов журналу для тестів
-    public string PresentedId;   // паспорт клієнта (для цінних)
+    public Action<string> Log = Console.WriteLine;      // шов журналу для тестів
+    public string PresentedId;
 
     public PickupDesk() : this(new OrderStore()) { }
 
@@ -34,14 +34,25 @@ public class PickupDesk
         return false;
     }
 
-    // Видача або повернення. Повертає "OK" або код помилки.
-    // isReturn - повернення, skipCheck - за довіреністю (без звірки
-    // телефону), partial - частковий викуп (див. RefuseItem)
-    public string Handout(string code, string phone, bool isReturn, bool skipCheck, bool partial)
+    // R19: сценарії мають імена, а не набір булевих прапорців.
+    public string Handout(string code, string phone)
+        => Process(code, phone, false, false, false);
+
+    public string HandoutByProxy(string code)
+        => Process(code, null, false, true, false);
+
+    public string HandoutPartially(string code, string phone)
+        => Process(code, phone, false, false, true);
+
+    public string ReturnOrder(string code, string phone)
+        => Process(code, phone, true, false, false);
+
+    private string Process(string code, string phone,
+        bool isReturn, bool skipCheck, bool partial)
     {
         LastAmount = 0m;
-        PickupOrder o = Store.FindByCode(code);
         DateTime moment = Clock();
+        PickupOrder o = Store.FindByCode(code);
         if (o == null)
             return "NOT_FOUND";
         if (!skipCheck)
@@ -57,17 +68,17 @@ public class PickupDesk
         {
             if (o.Status == OrderStatus.Stored)
             {
-                // відмова на пункті, гроші ще не брали
+                // відмова до видачі: річ ще на полиці
                 o.Status = OrderStatus.Returned;
                 o.History.Add("Refused");
                 return "REFUSED";
             }
             if (o.Status != OrderStatus.HandedOut)
                 return "ERR_STATUS " + o.Status;
-            int d2 = (moment.Date - o.HandedOutAt.Date).Days;   // днів з видачі
+            int d2 = (moment.Date - o.HandedOutAt.Date).Days;
             if (d2 > 14)
                 return "RETURN_PERIOD_OVER";
-            decimal back = o.PaidAmount - o.PaidFee;   // зберігання не вертаємо
+            decimal back = o.PaidAmount - o.PaidFee;
             Cash.Refund(back, o.Number);
             o.Status = OrderStatus.Returned;
             o.History.Add("Returned");
@@ -76,7 +87,7 @@ public class PickupDesk
         }
         if (o.Status != OrderStatus.Stored)
         {
-            // повернене чи протерміноване не видаємо
+            // повторна видача або видача з поверненого стану
             Log("  ! " + o.Number + " is " + o.Status + ", cannot hand out");
             return "ERR_STATUS " + o.Status;
         }
@@ -116,7 +127,7 @@ public class PickupDesk
             o.History.Add("Partial " + (o.Items.Count - refused) + "/" + o.Items.Count);
         }
         decimal total = goods + Cash.Commission(o, goods) + fee;
-        // після 20:00 інкасації нема, великі суми - карткою
+        // після 20:00 картка для великих сум
         if (total > 10000m && moment.Hour >= 20)
             return "CARD_ONLY";
         Cash.Take(total, o.Number);
@@ -134,7 +145,7 @@ public class PickupDesk
         return "OK";
     }
 
-    // стара формула (до 2023): 7 днів безкоштовно
+    // старий тариф (до 2023): 7 днів безкоштовно
     private decimal OldFee(int days)
     {
         return days > 7 ? (days - 7) * 10m : 0m;
