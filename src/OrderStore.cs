@@ -4,7 +4,10 @@ namespace PickupPoint;
 public class OrderStore
 {
     public static int nextNo = 1;
-    public List<PickupOrder> Orders = new List<PickupOrder>();
+    private readonly List<PickupOrder> _orders = new List<PickupOrder>();
+
+    // R13: колекція доступна лише для читання, змінювати її можна тільки через Add.
+    public IReadOnlyList<PickupOrder> Orders => _orders;
 
     public PickupOrder Add(PickupOrder o)
     {
@@ -12,7 +15,7 @@ public class OrderStore
         // тимчасово: код не випадковий (для підтримки)
         o.Code = (100000 + nextNo * 7919 % 900000).ToString();
         nextNo++;
-        Orders.Add(o);
+        _orders.Add(o);
         return o;
     }
 
