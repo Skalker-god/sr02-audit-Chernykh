@@ -7,7 +7,8 @@ public class PickupDesk
     public OrderStore Store;
     public StorageService Storage;
     public CashBox Cash = new CashBox();
-    public decimal LastAmount;   // сума останньої операції
+    public decimal LastAmount;
+    public Func<DateTime> Clock = () => DateTime.Now;   // шов часу для тестів
     public string PresentedId;   // паспорт клієнта (для цінних)
 
     public PickupDesk() : this(new OrderStore()) { }
@@ -39,6 +40,7 @@ public class PickupDesk
     {
         LastAmount = 0m;
         PickupOrder o = Store.FindByCode(code);
+        DateTime moment = Clock();
         if (o == null)
             return "NOT_FOUND";
         if (!skipCheck)
@@ -61,7 +63,7 @@ public class PickupDesk
             }
             if (o.Status != OrderStatus.HandedOut)
                 return "ERR_STATUS " + o.Status;
-            int d2 = (DateTime.Today - o.HandedOutAt.Date).Days;   // днів з видачі
+            int d2 = (moment.Date - o.HandedOutAt.Date).Days;   // днів з видачі
             if (d2 > 14)
                 return "RETURN_PERIOD_OVER";
             decimal back = o.PaidAmount - o.PaidFee;   // зберігання не вертаємо
@@ -79,7 +81,7 @@ public class PickupDesk
         }
         if (!skipCheck)
         {
-            if (DateTime.Today > o.StorageUntil)
+            if (moment.Date > o.StorageUntil)
             {
                 o.Status = OrderStatus.Expired;
                 o.History.Add("Expired");
@@ -89,7 +91,7 @@ public class PickupDesk
         }
         if (o.DeclaredValue >= 5000m && PresentedId == null)
             return "ID_REQUIRED";
-        int days = (DateTime.Today - o.ArrivedAt.Date).Days;
+        int days = (moment.Date - o.ArrivedAt.Date).Days;
         decimal rate = 15m;
         if (o.Size == "L")
             rate = 25m;
@@ -114,11 +116,11 @@ public class PickupDesk
         }
         decimal total = goods + Cash.Commission(o, goods) + fee;
         // після 20:00 інкасації нема, великі суми - карткою
-        if (total > 10000m && DateTime.Now.Hour >= 20)
+        if (total > 10000m && moment.Hour >= 20)
             return "CARD_ONLY";
         Cash.Take(total, o.Number);
         o.Status = OrderStatus.HandedOut;
-        o.HandedOutAt = DateTime.Now;
+        o.HandedOutAt = moment;
         o.PaidAmount = total;
         o.PaidFee = fee;
         o.History.Add("HandedOut");
