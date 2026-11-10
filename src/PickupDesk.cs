@@ -3,6 +3,15 @@ namespace PickupPoint;
 // Стійка видачі: видача, повернення, частковий викуп
 public class PickupDesk
 {
+    private const int ReturnPeriodDays = 14;
+    private const decimal IdRequiredFrom = 5000m;
+    private const decimal CardOnlyFrom = 10000m;
+    private const int CardOnlyHour = 20;
+    private const int FreeStorageDays = 5;
+    private const decimal StandardSizeRate = 15m;
+    private const decimal LargeSizeRate = 25m;
+    private const int OldFeeFreeDays = 7;
+    private const decimal OldFeeRate = 10m;
     public static int HandoutsToday = 0;
     public OrderStore Store;
     public StorageService Storage;
@@ -76,7 +85,7 @@ public class PickupDesk
             if (o.Status != OrderStatus.HandedOut)
                 return "ERR_STATUS " + o.Status;
             int d2 = (moment.Date - o.HandedOutAt.Date).Days;
-            if (d2 > 14)
+            if (d2 > ReturnPeriodDays)
                 return "RETURN_PERIOD_OVER";
             decimal back = o.PaidAmount - o.PaidFee;
             Cash.Refund(back, o.Number);
@@ -101,15 +110,15 @@ public class PickupDesk
                 return "EXPIRED";
             }
         }
-        if (o.DeclaredValue >= 5000m && PresentedId == null)
+        if (o.DeclaredValue >= IdRequiredFrom && PresentedId == null)
             return "ID_REQUIRED";
         int days = (moment.Date - o.ArrivedAt.Date).Days;
-        decimal rate = 15m;
+        decimal rate = StandardSizeRate;
         if (o.Size == "L")
-            rate = 25m;
+            rate = LargeSizeRate;
         decimal fee = 0m;
-        if (days > 5)
-            fee = (days - 5) * rate;
+        if (days > FreeStorageDays)
+            fee = (days - FreeStorageDays) * rate;
         decimal goods = o.CodAmount;
         if (partial)
         {
@@ -128,7 +137,7 @@ public class PickupDesk
         }
         decimal total = goods + Cash.Commission(o, goods) + fee;
         // після 20:00 картка для великих сум
-        if (total > 10000m && moment.Hour >= 20)
+        if (total > CardOnlyFrom && moment.Hour >= CardOnlyHour)
             return "CARD_ONLY";
         Cash.Take(total, o.Number);
         o.Status = OrderStatus.HandedOut;
@@ -148,6 +157,6 @@ public class PickupDesk
     // старий тариф (до 2023): 7 днів безкоштовно
     private decimal OldFee(int days)
     {
-        return days > 7 ? (days - 7) * 10m : 0m;
+        return days > OldFeeFreeDays ? (days - OldFeeFreeDays) * OldFeeRate : 0m;
     }
 }

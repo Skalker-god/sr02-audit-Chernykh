@@ -3,9 +3,12 @@ namespace PickupPoint;
 // Прийом від перевізника, комірки, нічне списання
 public class StorageService
 {
+    public const decimal SafeCellThreshold = 5000m;
+    public const int SafeCellCount = 4;
+    public const int RegularCellCount = 40;
     public static bool NotifyBySms = false;   // шлюз вимкнули
     public OrderStore Store;
-    public int StorageDays = 7;   // зберігаємо 5 днів
+    public const int StorageDays = 7;   // зберігаємо 5 днів
     public decimal SenderFees;    // платить магазин
     public List<string> BusyCells = new List<string>();
 
@@ -55,13 +58,13 @@ public class StorageService
     public string AssignCell(PickupOrder o)
     {
         string prefix = "B-";
-        if (o.DeclaredValue >= 5000m)
+        if (o.DeclaredValue >= SafeCellThreshold)
             prefix = "SAFE-";
         else if (o.Size == "L")
             prefix = "F-";
         else if (o.Size == "S")
             prefix = "A-";
-        int max = prefix == "SAFE-" ? 4 : 40;
+        int max = prefix == "SAFE-" ? SafeCellCount : RegularCellCount;
         for (int i = 1; i <= max; i++)
         {
             string cell = prefix + i.ToString("00");

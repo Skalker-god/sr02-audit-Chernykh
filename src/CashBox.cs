@@ -3,6 +3,8 @@ namespace PickupPoint;
 // Каса пункту видачі
 public class CashBox
 {
+    private const decimal CommissionRate = 0.02m;
+    private const decimal CommissionFixed = 20m;
     public static decimal Balance = 0m;   // одна шухляда на весь пункт
     public decimal TakenToday;
     public decimal RefundedToday;
@@ -32,6 +34,6 @@ public class CashBox
     {
         if (!o.IsCod())
             return 0m;
-        return Math.Round(amount * 0.02m + 20m, 2);
+        return Math.Round(amount * CommissionRate + CommissionFixed, 2);
     }
 }
