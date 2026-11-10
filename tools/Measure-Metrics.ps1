@@ -92,6 +92,14 @@ function Get-Methods([string]$file, [string]$text) {
                     $i++
                     $sig += ' ' + ($lines[$i] -replace '//.*$', '').Trim()
                 }
+                # Expression-bodied method: "=>" may start on the next line.
+                if ($sig -notmatch '=>' -and $i + 1 -lt $blk.End) {
+                    $next = ($lines[$i + 1] -replace '//.*$', '').Trim()
+                    if ($next.StartsWith('=>')) {
+                        $i++
+                        $sig += ' ' + $next
+                    }
+                }
                 $open = $sig.IndexOf('(')
                 $head = $sig.Substring(0, $open)
                 $nameMatch = [regex]::Matches($head, '\w+')
