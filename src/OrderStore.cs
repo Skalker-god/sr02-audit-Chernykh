@@ -51,11 +51,14 @@ public class OrderStore
         {
             if (o.Phone != p)
                 continue;
-            if (!includeClosed && (o.Status == OrderStatus.HandedOut
-                || o.Status == OrderStatus.Returned))
+            // R03: закритий стан має ім'я, а не ланцюжок порівнянь.
+            if (!includeClosed && IsClosed(o))
                 continue;
             res.Add(o);
         }
         return res;
     }
+
+    private static bool IsClosed(PickupOrder o)
+        => o.Status == OrderStatus.HandedOut || o.Status == OrderStatus.Returned;
 }
