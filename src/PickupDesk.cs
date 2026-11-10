@@ -10,8 +10,6 @@ public class PickupDesk
     private const int FreeStorageDays = 5;
     private const decimal StandardSizeRate = 15m;
     private const decimal LargeSizeRate = 25m;
-    private const int OldFeeFreeDays = 7;
-    private const decimal OldFeeRate = 10m;
     public static int HandoutsToday = 0;
     public OrderStore Store;
     public StorageService Storage;
@@ -200,7 +198,6 @@ public class PickupDesk
         o.PaidAmount = total;
         o.PaidFee = fee;
         o.History.Add("HandedOut");
-        // SmsGateway.Send(o.Phone, "Thank you! Order " + o.Number);
         Storage.BusyCells.Remove(o.Cell);
         PresentedId = null;
         HandoutsToday++;
@@ -209,9 +206,4 @@ public class PickupDesk
         return "OK";
     }
 
-    // старий тариф (до 2023): 7 днів безкоштовно
-    private decimal OldFee(int days)
-    {
-        return days > OldFeeFreeDays ? (days - OldFeeFreeDays) * OldFeeRate : 0m;
-    }
 }
