@@ -58,6 +58,3 @@ powershell -NoProfile -ExecutionPolicy Bypass -File tools\Find-Clones.ps1 -Src s
 powershell -NoProfile -ExecutionPolicy Bypass -File tools\Make-Figure1.ps1 -Metrics docs\metrics-before.csv -Out docs\fig1-cc-before.png
 powershell -NoProfile -ExecutionPolicy Bypass -File tools\Make-Figure2.ps1 -Before docs\metrics-before.csv -After docs\metrics-after.csv -Out docs\fig2-cc-before-after.png
 ```
-
-Репозиторій локальний: `C:\Users\user\Desktop\vscode\тест\sr02-audit-Chernykh`.
-Віддалений репозиторій не налаштований, push не виконувався.

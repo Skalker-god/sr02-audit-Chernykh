@@ -1,0 +1,33 @@
+﻿--- clone group ---
+locations: OrderStore.cs:43, StorageService.cs:26
+string p = phone.Trim();
+p = p.Replace(" ", "").Replace("-", "");
+p = p.Replace("(", "").Replace(")", "");
+if (p.StartsWith("+38"))
+p = p.Substring(3);
+if (p.Length == 12 && p.StartsWith("38"))
+--- clone group ---
+locations: PickupDesk.cs:92, ShiftReport.cs:17, StorageService.cs:131
+int days = (DateTime.Today - o.ArrivedAt.Date).Days;
+decimal rate = 15m;
+if (o.Size == "L")
+rate = 25m;
+decimal fee = 0m;
+if (days > 5)
+--- clone group ---
+locations: PickupDesk.cs:93, ShiftReport.cs:18, StorageService.cs:132
+decimal rate = 15m;
+if (o.Size == "L")
+rate = 25m;
+decimal fee = 0m;
+if (days > 5)
+fee = (days - 5) * rate;
+--- clone group ---
+locations: OrderStore.cs:44, StorageService.cs:27
+p = p.Replace(" ", "").Replace("-", "");
+p = p.Replace("(", "").Replace(")", "");
+if (p.StartsWith("+38"))
+p = p.Substring(3);
+if (p.Length == 12 && p.StartsWith("38"))
+p = p.Substring(2);
+clones=4
