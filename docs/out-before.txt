@@ -1,0 +1,47 @@
+=== Arrivals ===
+  PP-000001 | S | A-01 | Stored | code 107919
+  PP-000002 | M | B-01 | Stored | code 115838
+  PP-000003 | L | SAFE-01 | Stored | code 123757
+  PP-000004 | M | B-02 | Stored | code 131676
+  PP-000005 | S | A-02 | Stored | code 139595
+  PP-000006 | M | B-03 | Stored | code 147514
+  PP-000007 | M | B-04 | Stored | code 155433
+  PP-000008 | S | A-03 | Stored | code 163352
+  ! arrival rejected: invalid phone 12345
+=== Hand out ===
+PP-000001 hand out: OK 1244,00
+PP-000004 wrong phone: WRONG_PHONE 0,00
+Code 999999: NOT_FOUND
+  ! storage term of PP-000002 is over
+PP-000002 hand out: EXPIRED 0,00
+  ! PP-000002 is Expired, cannot hand out
+PP-000002 again: ERR_STATUS Expired 0,00
+PP-000003 no ID: ID_REQUIRED 0,00
+PP-000003 with ID: OK 7695,00
+PP-000008 partial: PARTIAL_NOT_ALLOWED 0,00
+PP-000008 refusal: REFUSED 0,00
+  ! PP-000008 is Returned, cannot hand out
+PP-000008 by proxy: ERR_STATUS Returned 0,00
+Refuse SKU-402: True
+Refuse SKU-999: False
+PP-000004 partial: OK 1448,00
+PP-000005 all refused: OK 20,00
+PP-000006 by proxy: OK 60,00
+=== Returns ===
+PP-000004 return: RETURNED 1448,00
+PP-000001 return: RETURN_PERIOD_OVER 0,00
+PP-000002 return: ERR_STATUS Expired 0,00
+To shop: True
+  ! cannot move PP-000008: Returned -> Stored
+To shelf: False
+  ! order PP-999999 not found
+To shelf: False
+PP-000004 history: Arrived > Stored > Partial 2/3 > HandedOut > Returned
+=== Night ===
+Shelf:
+  PP-000007 | M | B-04 | Stored | fee 75,00
+Expired: 1, billed 75,00
+=== Shift ===
+Handed out 4, returned 4, COD 8959,00
+Cash in 10467,00, out 1448,00, drawer 9019,00
+Handouts: 5
