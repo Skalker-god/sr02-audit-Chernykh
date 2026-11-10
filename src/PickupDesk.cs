@@ -9,6 +9,7 @@ public class PickupDesk
     public CashBox Cash = new CashBox();
     public decimal LastAmount;
     public Func<DateTime> Clock = () => DateTime.Now;   // шов часу для тестів
+    public Action<string> Log = Console.WriteLine;   // шов журналу для тестів
     public string PresentedId;   // паспорт клієнта (для цінних)
 
     public PickupDesk() : this(new OrderStore()) { }
@@ -76,7 +77,7 @@ public class PickupDesk
         if (o.Status != OrderStatus.Stored)
         {
             // повернене чи протерміноване не видаємо
-            Console.WriteLine("  ! " + o.Number + " is " + o.Status + ", cannot hand out");
+            Log("  ! " + o.Number + " is " + o.Status + ", cannot hand out");
             return "ERR_STATUS " + o.Status;
         }
         if (!skipCheck)
@@ -85,7 +86,7 @@ public class PickupDesk
             {
                 o.Status = OrderStatus.Expired;
                 o.History.Add("Expired");
-                Console.WriteLine("  ! storage term of " + o.Number + " is over");
+                Log("  ! storage term of " + o.Number + " is over");
                 return "EXPIRED";
             }
         }
