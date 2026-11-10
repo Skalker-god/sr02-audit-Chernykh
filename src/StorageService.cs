@@ -130,7 +130,7 @@ public class StorageService
     }
 
     // nightly job, scheduler runs it at 03:00
-    public int do_sweep()
+    public int SweepExpired()
     {
         int cnt = 0;
         foreach (PickupOrder o in Store.Orders)

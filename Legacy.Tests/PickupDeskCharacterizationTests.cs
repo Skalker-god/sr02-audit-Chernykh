@@ -503,12 +503,12 @@ public class PickupDeskCharacterizationTests
     {
         PickupDesk desk = NewDesk(Now);
         PickupOrder order = AddOrder(desk, 9, items: OneItem());
-        // do_sweep() використовує DateTime.Today, тому дати прив'язуємо до
+        // SweepExpired() використовує DateTime.Today, тому дати прив'язуємо до
         // реального дня запуску, а не до фіксованого Now.
         order.ArrivedAt = DateTime.Today.AddDays(-9);
         order.StorageUntil = DateTime.Today.AddDays(-2);
 
-        int count = desk.Storage.do_sweep();
+        int count = desk.Storage.SweepExpired();
 
         Assert.Equal(1, count);
         Assert.Equal(OrderStatus.Expired, order.Status);
