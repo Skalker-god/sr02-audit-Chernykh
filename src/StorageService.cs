@@ -41,8 +41,9 @@ public class StorageService
         PickupOrder o = new PickupOrder();
         o.RecipientName = name;
         o.Phone = p;
-        try { o.Size = size.Trim().ToUpper(); }
-        catch (Exception) { }   // без розміру лишається M
+        // R18: явна перевірка замість try/catch; null лишає типовий розмір M
+        if (size != null)
+            o.Size = size.Trim().ToUpper();
         o.DeclaredValue = declaredValue;
         o.CodAmount = cod;   // TODO: а якщо мінус?
         o.AllowPartial = allowPartial;
